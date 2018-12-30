@@ -9,6 +9,18 @@ df.fillna('no_answer', inplace=True)
 
 # # the question is how well can a persons diet and substance use determine age income or body_type
 
+# income_by_age = df.groupby(df.age).income.mean()
+# income_by_age.plot.bar(rot=0)
+# plt.xlabel("Age")
+# plt.ylabel("Mean Income")
+# plt.show()
+
+# income_by_body_type = df.groupby(df.body_type).income.mean()
+# income_by_body_type.plot.bar(rot=0)
+# plt.xlabel("Body Type")
+# plt.ylabel("Mean Income")
+# plt.show()
+
 def percentage_body_type_by_other(other_column):
     results = {}
     for f in df.groupby(df[other_column]): 
@@ -28,8 +40,8 @@ def percentage_body_type_by_other(other_column):
     plt.ylabel("Percentage responders Body Type")
     plt.show()
 
-# for label in ["drinks", "drugs", "smokes", "diet"]:
-#     percentage_body_type_by_other(label)
+# # for label in ["drinks", "drugs", "smokes", "diet"]:
+# #     percentage_body_type_by_other(label)
 
 # import pdb; pdb.set_trace()
 
