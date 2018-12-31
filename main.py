@@ -2,6 +2,9 @@ import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
 from sklearn import preprocessing
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+
 
 df = pd.read_csv("profiles.csv")
 
@@ -101,28 +104,44 @@ diet_type_map = {
 }
 
 
+
 feature_data = df[["diet", "drinks", "drugs", "body_type", "smokes", "income", "age"]]
 
 feature_data["diet_code"]  = feature_data.diet.map(diet_type_map)
 feature_data["drinks_code"]  = feature_data.drinks.map(drink_type_map)
 feature_data["smokes_code"]  = feature_data.smokes.map(smoke_type_map)
 feature_data["drugs_code"]  = feature_data.drugs.map(drug_type_map)
-feature_data["body_type"]  = feature_data.body_type.map(body_type_map)
+feature_data["body_code"]  = feature_data.body_type.map(body_type_map)
 
+feature_data.dropna(inplace=True)
+feature_data = feature_data[feature_data.income != -1]
+
+body_type = feature_data["body_code"]
+
+feature_data.drop(labels=["diet", "drinks", "drugs", "body_type", "body_code", "smokes"], axis=1, inplace=True)
+
+feature_values = feature_data.values
+min_max_scaler = preprocessing.MinMaxScaler()
+feature_values_scaled = min_max_scaler.fit_transform(feature_values)
+
+feature_data = pd.DataFrame(feature_values_scaled, columns=feature_data.columns)
 
 import pdb; pdb.set_trace()
 
-plt.scatter(df.drugs, df.body_type)
-plt.xlabel("Drug Use")
-plt.ylabel("Body Type")
+X_train, X_test, y_train, y_test = train_test_split(feature_data, body_type, test_size = 0.2, random_state = 1)
+
+model = LinearRegression()
+model.fit(X_train,y_train)
+
+print('Train Score:', model.score(X_train,y_train))
+print('Test Score:', model.score(X_test,y_test))
+print(sorted(list(zip(feature_data.columns,model.coef_)),key = lambda x: abs(x[1]),reverse=True))
+
+y_predicted = model.predict(X_test)
+
+plt.scatter(y_test,y_predicted)
+plt.xlabel('Body Type')
+plt.ylabel('Predicted Body Type')
 plt.show()
-
-x = feature_data.values
-min_max_scaler = preprocessing.MinMaxScaler()
-x_scaled = min_max_scaler.fit_transform(x)
-
-feature_data = pd.DataFrame(x_scaled, columns=feature_data.columns)
-
-df.job.head()
 
 import pdb; pdb.set_trace()
