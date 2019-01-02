@@ -116,32 +116,37 @@ feature_data["body_code"]  = feature_data.body_type.map(body_type_map)
 feature_data.dropna(inplace=True)
 feature_data = feature_data[feature_data.income != -1]
 
-body_type = feature_data["body_code"]
 
-feature_data.drop(labels=["diet", "drinks", "drugs", "body_type", "body_code", "smokes"], axis=1, inplace=True)
+def multiple_linear_regression(feature_data, dependent_column):
+    dependent_data = feature_data[dependent_column]
+    labels_to_drop = ["diet", "drinks", "drugs", "body_type", "smokes"] + [dependent_column]
+    feature_data.drop(labels=labels_to_drop, axis=1, inplace=True)
 
-feature_values = feature_data.values
-min_max_scaler = preprocessing.MinMaxScaler()
-feature_values_scaled = min_max_scaler.fit_transform(feature_values)
+    feature_values = feature_data.values
+    min_max_scaler = preprocessing.MinMaxScaler()
+    feature_values_scaled = min_max_scaler.fit_transform(feature_values)
 
-feature_data = pd.DataFrame(feature_values_scaled, columns=feature_data.columns)
+    feature_data = pd.DataFrame(feature_values_scaled, columns=feature_data.columns)
 
-import pdb; pdb.set_trace()
+    X_train, X_test, y_train, y_test = train_test_split(feature_data, dependent_data, test_size = 0.2, random_state = 1)
 
-X_train, X_test, y_train, y_test = train_test_split(feature_data, body_type, test_size = 0.2, random_state = 1)
+    model = LinearRegression()
+    model.fit(X_train,y_train)
 
-model = LinearRegression()
-model.fit(X_train,y_train)
+    print('Train Score:', model.score(X_train,y_train))
+    print('Test Score:', model.score(X_test,y_test))
+    print(sorted(list(zip(feature_data.columns,model.coef_)),key = lambda x: abs(x[1]),reverse=True))
 
-print('Train Score:', model.score(X_train,y_train))
-print('Test Score:', model.score(X_test,y_test))
-print(sorted(list(zip(feature_data.columns,model.coef_)),key = lambda x: abs(x[1]),reverse=True))
+    y_predicted = model.predict(X_test)
 
-y_predicted = model.predict(X_test)
+    plt.scatter(y_test, y_predicted, alpha=0.4)
+    plt.xlabel(dependent_column)
+    plt.ylabel('Predicted ' + dependent_column)
+    plt.show()
 
-plt.scatter(y_test,y_predicted)
-plt.xlabel('Body Type')
-plt.ylabel('Predicted Body Type')
-plt.show()
+
+# multiple_linear_regression(feature_data, "age")
+multiple_linear_regression(feature_data, "body_code")
+
 
 import pdb; pdb.set_trace()
